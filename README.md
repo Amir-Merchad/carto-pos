@@ -16,6 +16,8 @@
   <img alt="Languages" src="https://img.shields.io/badge/UI-English%20%7C%20Arabic%20(RTL)-0b7285">
 </p>
 
+> **Release context:** The classic product is live in shops. The screenshots below show the modernized development build, not a claim that this UI is already deployed to all customers. See [status](#status).
+
 <p align="center">
   <img src="docs/img/sale.png" alt="Sales screen" width="900">
 </p>
@@ -79,7 +81,7 @@ flowchart LR
 
 ## Engineering highlights
 
-In 2026 I led a modernisation of the product. It started with an audit of the running system. These are the problems it found and how they were solved.
+In 2026 I led a modernisation of the product. It started with an audit of the running system. The following notes describe problems found during that work and the approaches used in development. Test figures are recorded results from particular development checks, not a fresh verification of the latest build or every customer installation.
 
 ### Two tills, one receipt number
 Two tills could finish a sale at the same moment and both get the same receipt number. A customer reported this as "two invoices with the same ID".
@@ -87,16 +89,16 @@ Two tills could finish a sale at the same moment and both get the same receipt n
 - Each till sells into its **own daily invoice**. Only one till at a time can sell into a customer's invoice.
 - **Stress test:** two tills selling in parallel → **600 of 600 receipts unique**, stock totals exact.
 
-### Stock that is never counted twice
+### Preventing duplicate stock updates
 Stock was updated without transactions, so a crash in the middle of a sale could leave it wrong.
-- Each line now moves stock in one transaction, with an **"applied quantity" marker**, so a retried or edited line is never counted twice.
+- Each line now moves stock in one transaction, with an **"applied quantity" marker**, to prevent repeated stock application when a line is retried or edited.
 - A sale cannot take stock below zero. The cashier is told when the item is scanned, not at payment.
 
 ### Security
 - Plain-text passwords became **salted PBKDF2-SHA256 hashes**.
 - Login attempt limits and per-user roles. Cashiers only see Sales, Shift and Log out.
 - Discounts above a shop-wide limit need an **administrator's approval on the till**.
-- Every login, change and deletion is written to an **audit log**.
+- **Audit logging** supports investigation of application activity.
 
 ### Safe upgrades of live customer data
 - A **versioned, idempotent schema upgrade** takes a verified backup first and can roll back.
